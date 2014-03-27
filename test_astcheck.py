@@ -3,7 +3,7 @@ import re
 
 import ast
 import astcheck
-from astcheck import assert_ast_like, is_ast_like, mkarg
+from astcheck import assert_ast_like, is_ast_like, mkarg, format_path
 
 sample1_code = """
 def foobar(z, y, a, x, d):
@@ -107,3 +107,6 @@ class AstCheckTests(unittest.TestCase):
         with self.assertRaisesRegexp(astcheck.ASTPlainListMismatch, re.escape("Expected: ['x', 'y']")):
             assert_ast_like(sample2, template2_wronglist)
         assert not is_ast_like(sample2, template2_wronglist)
+
+def test_format_path():
+    assert format_path(['tree', 'body', 0, 'name']) == 'tree.body[0].name'
