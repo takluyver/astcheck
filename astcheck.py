@@ -35,6 +35,7 @@ def format_path(path):
     return "".join(formed)
 
 class ASTMismatch(AssertionError):
+    """Base exception for differing ASTs."""
     def __init__(self, path, got, expected):
         self.path = path
         self.expected = expected
@@ -46,22 +47,29 @@ class ASTMismatch(AssertionError):
                 "Expected: {}").format(format_path(self.path), self.got, self.expected)
 
 class ASTNodeTypeMismatch(ASTMismatch):
+    """An AST node was of the wrong type."""
     def __str__(self):
         return "At {}, found {} node instead of {}".format(format_path(self.path), 
                         type(self.got).__name__, type(self.expected).__name__)
 
 class ASTNodeListMismatch(ASTMismatch):
+    """A list of AST nodes had the wrong length."""
     def __str__(self):
         return "At {}, found {} node(s) instead of {}".format(format_path(self.path),
                 len(self.got), len(self.expected))
 
 class ASTPlainListMismatch(ASTMismatch):
+    """A list of non-AST objects did not match.
+    
+    e.g. A :class:`ast.Global` node has a ``names`` list of plain strings
+    """
     def __str__(self):
         return ("At {}, lists differ.\n"
                 "Found   : {}\n"
                 "Expected: {}").format(format_path(self.path), self.got, self.expected)
 
 class ASTPlainObjMismatch(ASTMismatch):
+    """A single value, such as a variable name, did not match."""
     def __str__(self):
         return "At {}, found {!r} instead of {!r}".format(format_path(self.path),
                     self.got, self.expected)
@@ -75,6 +83,12 @@ def _check_node_list(path, sample, template, start_enumerate=0):
         assert_ast_like(sample_node, template_node, path+[i])
 
 def assert_ast_like(sample, template, _path=None):
+    """Check that the sample AST matches the template.
+    
+    Raises a suitable subclass of :exc:`ASTMismatch` if a difference is detected.
+    
+    The ``_path`` parameter is used for recursion; you shouldn't normally pass it.
+    """
     if _path is None:
         _path = ['tree']
     if not isinstance(sample, type(template)):
@@ -115,6 +129,7 @@ def assert_ast_like(sample, template, _path=None):
                 raise ASTPlainObjMismatch(field_path, sample_field, template_field)
 
 def is_ast_like(sample, template):
+    """Returns True if the sample AST matches the template."""
     try:
         assert_ast_like(sample, template)
         return True
