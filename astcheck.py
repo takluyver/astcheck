@@ -9,6 +9,22 @@ else:
     def mkarg(name):
         return ast.Name(id=name, ctx=ast.Param())
 
+class listmiddle(object):
+    def __init__(self, front=None, back=None):
+        super(listmiddle, self).__init__()
+        self.front = front or []
+        self.back = back or []
+
+    def __radd__(self, other):
+        if not isinstance(other, list):
+            raise TypeError("Cannot add {} and listmiddle objects".format(type(other)))
+        return listmiddle(other+self.front, self.back)
+
+    def __add__(self, other):
+        if not isinstance(other, list):
+            raise TypeError("Cannot add listmiddle and {} objects".format(type(other)))
+        return listmiddle(self.front, self.back + other)
+
 def format_path(path):
     formed = path[:1]
     for part in path[1:]:
@@ -50,6 +66,14 @@ class ASTPlainObjMismatch(ASTMismatch):
         return "At {}, found {!r} instead of {!r}".format(format_path(self.path),
                     self.got, self.expected)
 
+def _check_node_list(path, sample, template, start_enumerate=0):
+    """Check a list of nodes, e.g. function body"""
+    if len(sample) != len(template):
+        raise ASTNodeListMismatch(path, sample, template)
+
+    for i, (sample_node, template_node) in enumerate(zip(sample, template), start=start_enumerate):
+        assert_ast_like(sample_node, template_node, path+[i])
+
 def assert_ast_like(sample, template, _path=None):
     if _path is None:
         _path = ['tree']
@@ -62,19 +86,26 @@ def assert_ast_like(sample, template, _path=None):
         
         if isinstance(template_field, list):
             if template_field and isinstance(template_field[0], ast.AST):
-                # List of nodes, e.g. function body
-                if len(sample_field) != len(template_field):
-                    raise ASTNodeListMismatch(field_path, sample_field, template_field)
-
-                for i, (sample_node, template_node) in \
-                        enumerate(zip(sample_field, template_field)):
-                    assert_ast_like(sample_node, template_node, field_path+[i])
-            
+                _check_node_list(field_path, sample_field, template_field)
             else:
                 # List of plain values, e.g. 'global' statement names
                 if sample_field != template_field:
                     raise ASTPlainListMismatch(field_path, sample_field, template_field)
         
+        elif isinstance(template_field, listmiddle):
+            if template_field.front:
+                nfront = len(template_field.front)
+                if len(sample_field) < nfront:
+                    raise ASTNodeListMismatch(field_path+['<front>'],
+                                              sample_field, template_field.front)
+                _check_node_list(field_path, sample_field[:nfront], template_field.front)
+            if template_field.back:
+                nback = len(template_field.back)
+                if len(sample_field) < nback:
+                    raise ASTNodeListMismatch(field_path+['<back>'],
+                                              sample_field, template_field.back)
+                _check_node_list(field_path, sample_field[-nback:], template_field.back, -nback)
+
         elif isinstance(template_field, ast.AST):
             assert_ast_like(sample_field, template_field, field_path)
         
