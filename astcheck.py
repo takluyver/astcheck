@@ -102,7 +102,11 @@ def _check_node_list(path, sample, template, start_enumerate=0):
         raise ASTNodeListMismatch(path, sample, template)
 
     for i, (sample_node, template_node) in enumerate(zip(sample, template), start=start_enumerate):
-        assert_ast_like(sample_node, template_node, path+[i])
+        if callable(template_node):
+            # Checker function inside a list
+            template_node(sample_node, path+[i])
+        else:
+            assert_ast_like(sample_node, template_node, path+[i])
 
 def assert_ast_like(sample, template, _path=None):
     """Check that the sample AST matches the template.
@@ -121,7 +125,8 @@ def assert_ast_like(sample, template, _path=None):
         field_path = _path + [name]
         
         if isinstance(template_field, list):
-            if template_field and isinstance(template_field[0], ast.AST):
+            if template_field and (isinstance(template_field[0], ast.AST)
+                                     or callable(template_field[0])):
                 _check_node_list(field_path, sample_field, template_field)
             else:
                 # List of plain values, e.g. 'global' statement names
