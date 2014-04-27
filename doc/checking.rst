@@ -3,6 +3,21 @@ Checking ASTs
 
 .. module:: astcheck
 
+Start by defining a template, a partial AST to compare against. You can fill in
+as many or as few fields as you want. For example, to check for assignment to
+a variable ``a``, but ignore the value:
+
+.. code-block:: python
+
+    template = ast.Module(body=[
+                    ast.Assign(targets=[ast.Name(id='a')])
+                ])
+    sample = ast.parse("a = 7")
+    astcheck.assert_ast_like(sample, template)
+
+astcheck provides some helpers for defining flexible templates; see
+:doc:`templateutils`.
+
 .. autofunction:: assert_ast_like
 .. autofunction:: is_ast_like
 
