@@ -4,7 +4,7 @@ import re
 import ast
 import astcheck
 from astcheck import (assert_ast_like, is_ast_like, mkarg, format_path,
-                      listmiddle,
+                      listmiddle, name_or_attr,
                      )
 
 sample1_code = """
@@ -172,3 +172,70 @@ class TestPartialNodeLists(unittest.TestCase):
             assert_ast_like(sample3, template3_wrong_node_type)
 
         assert raised.exception.path == ['tree', 'body', -1]
+
+sample4_code = "a.b * c + 4"
+sample4 = ast.parse(sample4_code, mode='eval')
+
+template4 = ast.Expression(body=ast.BinOp(
+    left=ast.BinOp(left=name_or_attr('b'), op=ast.Mult(), right=name_or_attr('c')),
+    op = ast.Add(), right=ast.Num(n=4)
+    )
+)
+
+template4_not_name_or_attr = ast.Expression(body=ast.BinOp(right=name_or_attr('x')))
+
+template4_name_wrong = ast.Expression(body=ast.BinOp(
+                            left=ast.BinOp(right=name_or_attr('d'))
+))
+
+template4_attr_wrong = ast.Expression(body=ast.BinOp(
+                            left=ast.BinOp(left=name_or_attr('d'))
+))
+
+class TestNameOrAttr(unittest.TestCase):
+    def test_name_or_attr_correct(self):
+        assert_ast_like(sample4, template4)
+        assert is_ast_like(sample4, template4)
+
+    def test_not_name_or_attr(self):
+        with self.assertRaises(astcheck.ASTNodeTypeMismatch) as raised:
+            assert_ast_like(sample4, template4_not_name_or_attr)
+
+        assert raised.exception.path == ['tree', 'body', 'right']
+
+    def test_name_wrong(self):
+        with self.assertRaises(astcheck.ASTPlainObjMismatch) as raised:
+            assert_ast_like(sample4, template4_name_wrong)
+
+        assert raised.exception.path == ['tree', 'body', 'left', 'right', 'id']
+
+    def test_attr_wrong(self):
+        with self.assertRaises(astcheck.ASTPlainObjMismatch) as raised:
+            assert_ast_like(sample4, template4_attr_wrong)
+
+        assert raised.exception.path == ['tree', 'body', 'left', 'left', 'attr']
+
+number_sample_code = "9 - 4"
+number_sample = ast.parse(number_sample_code, mode='eval')
+
+def less_than_seven(node, path):
+    if not isinstance(node, ast.Num):
+        raise astcheck.ASTNodeTypeMismatch(path, node, ast.Num())
+    if node.n >= 7:
+        raise astcheck.ASTMismatch(path+['n'], node.n, '< 7')
+
+number_template_ok = ast.Expression(body=ast.BinOp(left=ast.Num(n=9),
+                                op=ast.Sub(), right=less_than_seven
+))
+
+number_template_wrong = ast.Expression(body=ast.BinOp(left=less_than_seven))
+
+class TestCheckerFunction(unittest.TestCase):
+    def test_lt_7(self):
+        assert_ast_like(number_sample, number_template_ok)
+
+    def test_lt_7_wrong(self):
+        with self.assertRaisesRegexp(astcheck.ASTMismatch, "Expected: < 7") as raised:
+            assert_ast_like(number_sample, number_template_wrong)
+
+        assert raised.exception.path == ['tree', 'body', 'left', 'n']

@@ -9,6 +9,25 @@ else:
     def mkarg(name):
         return ast.Name(id=name, ctx=ast.Param())
 
+def name_or_attr(name):
+    """Make a checker function for :class:`ast.Name` or :class:`ast.Attribute`.
+    
+    These are often used in similar ways - depending on how you do imports,
+    objects will be referenced as names or as attributes of a module. By using
+    this function to build your template, you can allow either.
+    """
+    def checker(node, path):
+        if isinstance(node, ast.Name):
+            if node.id != name:
+                raise ASTPlainObjMismatch(path+['id'], node.id, name)
+        elif isinstance(node, ast.Attribute):
+            if node.attr != name:
+                raise ASTPlainObjMismatch(path+['attr'], node.attr, name)
+        else:
+            raise ASTNodeTypeMismatch(path, node, "Name or Attribute")
+
+    return checker
+
 class listmiddle(object):
     def __init__(self, front=None, back=None):
         super(listmiddle, self).__init__()
@@ -49,8 +68,9 @@ class ASTMismatch(AssertionError):
 class ASTNodeTypeMismatch(ASTMismatch):
     """An AST node was of the wrong type."""
     def __str__(self):
+        expected = type(self.expected).__name__ if isinstance(ast.AST) else self.expected
         return "At {}, found {} node instead of {}".format(format_path(self.path), 
-                        type(self.got).__name__, type(self.expected).__name__)
+                        type(self.got).__name__, expected)
 
 class ASTNodeListMismatch(ASTMismatch):
     """A list of AST nodes had the wrong length."""
@@ -123,6 +143,10 @@ def assert_ast_like(sample, template, _path=None):
         elif isinstance(template_field, ast.AST):
             assert_ast_like(sample_field, template_field, field_path)
         
+        elif callable(template_field):
+            # Checker function
+            template_field(sample_field, field_path)
+
         else:
             # Single value, e.g. Name.id
             if sample_field != template_field:

@@ -27,6 +27,34 @@ astcheck provides some helpers for defining flexible templates; see
    ``sample`` will be the result of the code you want to test, and ``template``
    will be defined in your test file.
 
+Checker functions
+-----------------
+
+You may want to write more customised checks for part of the AST. To do so, you
+can attach 'checker functions' to any part of the template tree. Checker
+functions should accept two parameters: the node or value at the corresponding
+part of the sample tree, and the path to that node—a list of strings and integers
+representing the attribute and index access used to get there from the root of
+the sample tree.
+
+If the value passed is not acceptable, the checker function should raise one
+of the exceptions described below. Otherwise, it should return with no exception.
+The return value is ignored.
+
+For instance, this will test for a number literal less than 7:
+
+.. code-block:: python
+
+    def less_than_seven(node, path):
+        if not isinstance(node, ast.Num):
+            raise astcheck.ASTNodeTypeMismatch(path, node, ast.Num())
+        if node.n >= 7:
+            raise astcheck.ASTMismatch(path+['n'], node.n, '< 7')
+
+    template = ast.Expression(body=ast.BinOp(left=less_than_seven))
+    sample = ast.parse('4+9', mode='eval')
+    astcheck.assert_ast_like(sample, template)
+
 Exceptions
 ----------
 
