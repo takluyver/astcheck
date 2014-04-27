@@ -27,6 +27,8 @@ astcheck provides some helpers for defining flexible templates; see
    ``sample`` will be the result of the code you want to test, and ``template``
    will be defined in your test file.
 
+.. _checkerfuncs:
+
 Checker functions
 -----------------
 

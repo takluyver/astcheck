@@ -2,6 +2,8 @@ import ast
 import sys
 PY3 = sys.version_info[0] >= 3
 
+__version__ = '0.2'
+
 if PY3:
     def mkarg(name):
         return ast.arg(arg=name)

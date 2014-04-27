@@ -13,6 +13,7 @@ For more details about the structure of ASTs, see my documentation project,
 
    checking
    templateutils
+   changes
 
 
 Indices and tables
