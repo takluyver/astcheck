@@ -230,6 +230,24 @@ number_template_ok = ast.Expression(body=ast.BinOp(left=ast.Num(n=9),
 
 number_template_wrong = ast.Expression(body=ast.BinOp(left=less_than_seven))
 
+for_else_sample_code = """for a in b:
+    pass
+else:
+    pass
+"""
+
+for_else_sample = ast.parse(for_else_sample_code)
+
+for_noelse_sample_code = """for a in b:
+    pass
+"""
+
+for_noelse_sample = ast.parse(for_noelse_sample_code)
+
+for_else_template = ast.For(orelse=astcheck.must_exist)
+
+for_noelse_template = ast.For(orelse=astcheck.must_not_exist)
+
 class TestCheckerFunction(unittest.TestCase):
     def test_lt_7(self):
         assert_ast_like(number_sample, number_template_ok)
@@ -239,3 +257,19 @@ class TestCheckerFunction(unittest.TestCase):
             assert_ast_like(number_sample, number_template_wrong)
 
         assert raised.exception.path == ['tree', 'body', 'left', 'n']
+
+    def test_must_exist(self):
+        assert_ast_like(for_else_sample.body[0], for_else_template)
+
+        with self.assertRaisesRegexp(astcheck.ASTMismatch, "Expected: non empty") as raised:
+            assert_ast_like(for_noelse_sample.body[0], for_else_template)
+
+        assert raised.exception.path == ['tree', 'orelse']
+
+    def test_must_not_exist(self):
+        assert_ast_like(for_noelse_sample.body[0], for_noelse_template)
+
+        with self.assertRaisesRegexp(astcheck.ASTMismatch, "Expected: nothing") as raised:
+            assert_ast_like(for_else_sample.body[0], for_noelse_template)
+
+        assert raised.exception.path == ['tree', 'orelse']

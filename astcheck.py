@@ -11,12 +11,40 @@ else:
     def mkarg(name):
         return ast.Name(id=name, ctx=ast.Param())
 
+def must_exist(node, path):
+    """Checker function for an item or list that must exist
+    
+    This matches any value except None and the empty list.
+    
+    For instance, to match for loops with an else clause::
+    
+        ast.For(orelse=astcheck.must_exist)
+    """
+    if (node is None) or (node == []):
+        raise ASTMismatch(path, node, "non empty")
+
+def must_not_exist(node, path):
+    """Checker function for things that must not exist
+    
+    This accepts only None and the empty list.
+    
+    For instance, to check that a function has no decorators::
+    
+        ast.FunctionDef(decorator_list=astcheck.must_not_exist)
+    """
+    if (node is None) or (node == []):
+        return
+    raise ASTMismatch(path, node, "nothing")
+
 def name_or_attr(name):
     """Make a checker function for :class:`ast.Name` or :class:`ast.Attribute`.
     
     These are often used in similar ways - depending on how you do imports,
     objects will be referenced as names or as attributes of a module. By using
-    this function to build your template, you can allow either.
+    this function to build your template, you can allow either. For instance,
+    this will match both ``f()`` and ``mod.f()``::
+    
+        ast.Call(func=astcheck.name_or_attr('f'))
     """
     def checker(node, path):
         if isinstance(node, ast.Name):

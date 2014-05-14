@@ -11,6 +11,10 @@ astcheck includes some utilities for building AST templates to care against.
    node in Python 3, and a :class:`ast.Name` node with ``ctx`` of
    :class:`ast.Param` in Python 2.
 
+.. autofunction:: must_exist
+
+.. autofunction:: must_not_exist
+
 .. autofunction:: name_or_attr
 
 .. class:: listmiddle

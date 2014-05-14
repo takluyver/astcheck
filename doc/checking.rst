@@ -57,6 +57,8 @@ For instance, this will test for a number literal less than 7:
     sample = ast.parse('4+9', mode='eval')
     astcheck.assert_ast_like(sample, template)
 
+There are a few checker functions available in astcheck—see :doc:`templateutils`.
+
 Exceptions
 ----------
 
