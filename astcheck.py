@@ -98,7 +98,7 @@ class ASTMismatch(AssertionError):
 class ASTNodeTypeMismatch(ASTMismatch):
     """An AST node was of the wrong type."""
     def __str__(self):
-        expected = type(self.expected).__name__ if isinstance(ast.AST) else self.expected
+        expected = type(self.expected).__name__ if isinstance(self.expected, ast.AST) else self.expected
         return "At {}, found {} node instead of {}".format(format_path(self.path), 
                         type(self.got).__name__, expected)
 
