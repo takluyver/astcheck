@@ -36,7 +36,7 @@ def must_not_exist(node, path):
         return
     raise ASTMismatch(path, node, "nothing")
 
-def name_or_attr(name):
+class name_or_attr(object):
     """Make a checker function for :class:`ast.Name` or :class:`ast.Attribute`.
     
     These are often used in similar ways - depending on how you do imports,
@@ -46,17 +46,21 @@ def name_or_attr(name):
     
         ast.Call(func=astcheck.name_or_attr('f'))
     """
-    def checker(node, path):
+    def __init__(self, name):
+        self.name = name
+
+    def __repr__(self):
+        return "astcheck.name_or_attr(%r)" % self.name
+
+    def __call__(self, node, path):
         if isinstance(node, ast.Name):
-            if node.id != name:
-                raise ASTPlainObjMismatch(path+['id'], node.id, name)
+            if node.id != self.name:
+                raise ASTPlainObjMismatch(path+['id'], node.id, self.name)
         elif isinstance(node, ast.Attribute):
-            if node.attr != name:
-                raise ASTPlainObjMismatch(path+['attr'], node.attr, name)
+            if node.attr != self.name:
+                raise ASTPlainObjMismatch(path+['attr'], node.attr, self.name)
         else:
             raise ASTNodeTypeMismatch(path, node, "Name or Attribute")
-
-    return checker
 
 class listmiddle(object):
     def __init__(self, front=None, back=None):
