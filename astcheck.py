@@ -149,6 +149,11 @@ def assert_ast_like(sample, template, _path=None):
     """
     if _path is None:
         _path = ['tree']
+
+    if callable(template):
+        # Checker function at the top level
+        return template(sample, _path)
+
     if not isinstance(sample, type(template)):
         raise ASTNodeTypeMismatch(_path, sample, template)
 
