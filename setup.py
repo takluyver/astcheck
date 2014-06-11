@@ -4,7 +4,7 @@ with open("README.rst", "r") as f:
     readme = f.read()
 
 setup(name='astcheck',
-      version='0.2.1',
+      version='0.2.2',
       description='Check Python ASTs against templates',
       long_description = readme,
       author='Thomas Kluyver',
