@@ -78,6 +78,21 @@ class listmiddle(object):
             raise TypeError("Cannot add listmiddle and {} objects".format(type(other)))
         return listmiddle(self.front, self.back + other)
 
+    def __call__(self, sample_list, path):
+        if not isinstance(sample_list, list):
+            raise ASTNodeTypeMismatch(path, sample_list, list)
+
+        if self.front:
+            nfront = len(self.front)
+            if len(sample_list) < nfront:
+                raise ASTNodeListMismatch(path+['<front>'], sample_list, self.front)
+            _check_node_list(path, sample_list[:nfront], self.front)
+        if self.back:
+            nback = len(self.back)
+            if len(sample_list) < nback:
+                raise ASTNodeListMismatch(path+['<back>'], sample_list, self.back)
+            _check_node_list(path, sample_list[-nback:], self.back, -nback)
+
 def format_path(path):
     formed = path[:1]
     for part in path[1:]:
@@ -169,20 +184,6 @@ def assert_ast_like(sample, template, _path=None):
                 # List of plain values, e.g. 'global' statement names
                 if sample_field != template_field:
                     raise ASTPlainListMismatch(field_path, sample_field, template_field)
-        
-        elif isinstance(template_field, listmiddle):
-            if template_field.front:
-                nfront = len(template_field.front)
-                if len(sample_field) < nfront:
-                    raise ASTNodeListMismatch(field_path+['<front>'],
-                                              sample_field, template_field.front)
-                _check_node_list(field_path, sample_field[:nfront], template_field.front)
-            if template_field.back:
-                nback = len(template_field.back)
-                if len(sample_field) < nback:
-                    raise ASTNodeListMismatch(field_path+['<back>'],
-                                              sample_field, template_field.back)
-                _check_node_list(field_path, sample_field[-nback:], template_field.back, -nback)
 
         elif isinstance(template_field, ast.AST):
             assert_ast_like(sample_field, template_field, field_path)
