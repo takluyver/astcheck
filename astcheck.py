@@ -63,6 +63,35 @@ class name_or_attr(object):
         else:
             raise ASTNodeTypeMismatch(path, node, "Name or Attribute")
 
+class single_assign:
+    """Checker for :class:`ast.Assign` or :class:`ast.AnnAssign`
+
+    Matches only assignments with a single target. Will also check against
+    the target & value, if specified.
+    """
+    def __init__(self, target=None, value=None):
+        self.target = target
+        self.value = value
+
+    def __repr__(self):
+        return "astcheck.single_assign(%r, %r)" % (self.target, self.value)
+
+    def __call__(self, node, path):
+        if isinstance(node, ast.Assign):
+            if len(node.targets) != 1:
+                raise ASTNodeListMismatch(path+['targets'], node.targets, [self.target])
+            if self.target is not None:
+                assert_ast_like(node.targets[0], self.target, path + ['targets', 0])
+            if self.value is not None:
+                assert_ast_like(node.value, self.value, path + ['value'])
+        elif hasattr(ast, 'AnnAssign') and isinstance(node, ast.AnnAssign):
+            if self.target is not None:
+                assert_ast_like(node.target, self.target, path + ['target'])
+            if self.value is not None:
+                assert_ast_like(node.value, self.value, path + ['value'])
+        else:
+            raise ASTNodeTypeMismatch(path, node, "Assign or AnnAssign")
+
 class listmiddle(object):
     def __init__(self, front=None, back=None):
         super(listmiddle, self).__init__()
