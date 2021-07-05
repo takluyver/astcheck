@@ -1,3 +1,4 @@
+import sys
 import unittest
 import re
 
@@ -219,61 +220,69 @@ class TestNameOrAttr(unittest.TestCase):
 
 assign_sample_code = """
 a = 1
-b: int = 2
 c = d = 3
 e.f = 4
-g.h = 5
 """
 assign_sample = ast.parse(assign_sample_code, mode='exec')
 
 def test_single_assign():
     assert_ast_like(assign_sample.body[0], astcheck.single_assign())
-    assert_ast_like(assign_sample.body[1], astcheck.single_assign())
     with pytest.raises(astcheck.ASTNodeListMismatch):
-        assert_ast_like(assign_sample.body[2], astcheck.single_assign())
-    assert_ast_like(assign_sample.body[3], astcheck.single_assign())
-    assert_ast_like(assign_sample.body[4], astcheck.single_assign())
+        assert_ast_like(assign_sample.body[1], astcheck.single_assign())
+    assert_ast_like(assign_sample.body[2], astcheck.single_assign())
 
 def test_single_assign_target_value():
     assert_ast_like(assign_sample.body[0], astcheck.single_assign(
-        target=ast.Name('a'), value=ast.Num(1),
+        target=ast.Name(id='a'), value=ast.Num(1),
     ))
     with pytest.raises(astcheck.ASTPlainObjMismatch):
         assert_ast_like(assign_sample.body[0], astcheck.single_assign(
-            target=ast.Name('z')
+            target=ast.Name(id='z')
         ))
     with pytest.raises(astcheck.ASTPlainObjMismatch):
         assert_ast_like(assign_sample.body[0], astcheck.single_assign(
             value=ast.Num(99)
         ))
 
-    assert_ast_like(assign_sample.body[1], astcheck.single_assign(
-        target=ast.Name('b'), value=ast.Num(2),
-    ))
-    with pytest.raises(astcheck.ASTPlainObjMismatch):
-        assert_ast_like(assign_sample.body[1], astcheck.single_assign(
-            target=ast.Name('z')
-        ))
-    with pytest.raises(astcheck.ASTPlainObjMismatch):
-        assert_ast_like(assign_sample.body[1], astcheck.single_assign(
-            value=ast.Num(99)
-        ))
-
-    assert_ast_like(assign_sample.body[3], astcheck.single_assign(
+    assert_ast_like(assign_sample.body[2], astcheck.single_assign(
         target=astcheck.name_or_attr('f'), value=ast.Num(4),
     ))
     with pytest.raises(astcheck.ASTPlainObjMismatch):
-        assert_ast_like(assign_sample.body[3], astcheck.single_assign(
+        assert_ast_like(assign_sample.body[2], astcheck.single_assign(
             target=astcheck.name_or_attr('z')
         ))
 
-    assert_ast_like(assign_sample.body[4], astcheck.single_assign(
+
+@pytest.mark.skipif(sys.version_info < (3, 6), reason="Python < 3.6")
+def test_single_assign_annotated():
+    ann_assign_sample_code = (
+        "b: int = 2\n"
+        "g.h: int = 5"
+    )
+    b, g_h = ast.parse(ann_assign_sample_code, mode='exec').body
+
+    assert_ast_like(b, astcheck.single_assign())
+    assert_ast_like(b, astcheck.single_assign(
+        target=ast.Name(id='b'), value=ast.Num(2),
+    ))
+    with pytest.raises(astcheck.ASTPlainObjMismatch):
+        assert_ast_like(b, astcheck.single_assign(
+            target=ast.Name(id='z')
+        ))
+    with pytest.raises(astcheck.ASTPlainObjMismatch):
+        assert_ast_like(b, astcheck.single_assign(
+            value=ast.Num(99)
+        ))
+
+    assert_ast_like(g_h, astcheck.single_assign())
+    assert_ast_like(g_h, astcheck.single_assign(
         target=astcheck.name_or_attr('h'), value=ast.Num(5),
     ))
     with pytest.raises(astcheck.ASTPlainObjMismatch):
-        assert_ast_like(assign_sample.body[4], astcheck.single_assign(
+        assert_ast_like(g_h, astcheck.single_assign(
             target=astcheck.name_or_attr('z')
         ))
+
 
 number_sample_code = "9 - 4"
 number_sample = ast.parse(number_sample_code, mode='eval')
