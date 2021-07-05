@@ -11,11 +11,12 @@ readme = "README.rst"
 classifiers = [
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
-    "Programming Language :: Python", "Programming Language :: Python :: 2",
+    "Programming Language :: Python",
     "Programming Language :: Python :: 3",
     "Topic :: Software Development :: Code Generators",
     "Topic :: Software Development :: Testing",
 ]
+requires-python = ">=3.5"
 dynamic = ['version', 'description']
 
 [project.urls]
