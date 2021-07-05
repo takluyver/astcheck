@@ -1,13 +1,13 @@
 [build-system]
-requires = ["flit"]
-build-backend = "flit.buildapi"
+requires = ["flit_core >=3.2,<3.3"]
+build-backend = "flit_core.buildapi"
 
-[tool.flit.metadata]
-module = "astcheck"
-author = "Thomas Kluyver"
-author-email = "thomas@kluyver.me.uk"
-home-page = "https://github.com/takluyver/astcheck"
-description-file = "README.rst"
+[project]
+name = "astcheck"
+authors = [
+    {name = "Thomas Kluyver", email = "thomas@kluyver.me.uk"},
+]
+readme = "README.rst"
 classifiers = [
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
@@ -16,4 +16,7 @@ classifiers = [
     "Topic :: Software Development :: Code Generators",
     "Topic :: Software Development :: Testing",
 ]
+dynamic = ['version', 'description']
 
+[project.urls]
+Source = "https://github.com/takluyver/astcheck"
