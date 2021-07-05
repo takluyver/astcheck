@@ -98,17 +98,17 @@ class AstCheckTests(unittest.TestCase):
         assert not is_ast_like(sample1, template1_wrongnode)
 
     def test_wrong_nodelist(self):
-        with self.assertRaisesRegexp(astcheck.ASTNodeListMismatch, re.escape("5 node(s) instead of 4")):
+        with self.assertRaisesRegex(astcheck.ASTNodeListMismatch, re.escape("5 node(s) instead of 4")):
             assert_ast_like(sample1, template1_wrongnodelist)
         assert not is_ast_like(sample1, template1_wrongnodelist)
 
     def test_wrong_plain_value(self):
-        with self.assertRaisesRegexp(astcheck.ASTPlainObjMismatch, "'d' instead of 'e'"):
+        with self.assertRaisesRegex(astcheck.ASTPlainObjMismatch, "'d' instead of 'e'"):
             assert_ast_like(sample1, template1_wrongvalue)
         assert not is_ast_like(sample1, template1_wrongvalue)
 
     def test_wrong_plain_list(self):
-        with self.assertRaisesRegexp(astcheck.ASTPlainListMismatch, re.escape("Expected: ['x', 'y']")):
+        with self.assertRaisesRegex(astcheck.ASTPlainListMismatch, re.escape("Expected: ['x', 'y']")):
             assert_ast_like(sample2, template2_wronglist)
         assert not is_ast_like(sample2, template2_wronglist)
 
@@ -313,7 +313,7 @@ class TestCheckerFunction(unittest.TestCase):
         assert_ast_like(number_sample, number_template_ok)
 
     def test_lt_7_wrong(self):
-        with self.assertRaisesRegexp(astcheck.ASTMismatch, "Expected: < 7") as raised:
+        with self.assertRaisesRegex(astcheck.ASTMismatch, "Expected: < 7") as raised:
             assert_ast_like(number_sample, number_template_wrong)
 
         assert raised.exception.path == ['tree', 'body', 'left', 'n']
@@ -321,7 +321,7 @@ class TestCheckerFunction(unittest.TestCase):
     def test_must_exist(self):
         assert_ast_like(for_else_sample.body[0], for_else_template)
 
-        with self.assertRaisesRegexp(astcheck.ASTMismatch, "Expected: non empty") as raised:
+        with self.assertRaisesRegex(astcheck.ASTMismatch, "Expected: non empty") as raised:
             assert_ast_like(for_noelse_sample.body[0], for_else_template)
 
         assert raised.exception.path == ['tree', 'orelse']
@@ -329,7 +329,7 @@ class TestCheckerFunction(unittest.TestCase):
     def test_must_not_exist(self):
         assert_ast_like(for_noelse_sample.body[0], for_noelse_template)
 
-        with self.assertRaisesRegexp(astcheck.ASTMismatch, "Expected: nothing") as raised:
+        with self.assertRaisesRegex(astcheck.ASTMismatch, "Expected: nothing") as raised:
             assert_ast_like(for_else_sample.body[0], for_noelse_template)
 
         assert raised.exception.path == ['tree', 'orelse']
