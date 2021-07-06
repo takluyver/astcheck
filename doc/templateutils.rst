@@ -3,7 +3,7 @@ Template building utilities
 
 .. currentmodule:: astcheck
 
-astcheck includes some utilities for building AST templates to care against.
+astcheck includes some utilities for building AST templates to check against.
 
 .. autofunction:: must_exist
 
