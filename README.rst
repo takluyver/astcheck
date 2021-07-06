@@ -15,7 +15,7 @@ Example use:
     import ast, astcheck
 
     template = ast.Module(body=[
-        ast.FunctionDef(name='double', args=ast.arguments(args=[astcheck.mkarg('a')])),
+        ast.FunctionDef(name='double', args=ast.arguments(args=[ast.arg(arg='a')])),
         ast.Assign(value=ast.Call(func=ast.Name(id='double')))
     ])
 

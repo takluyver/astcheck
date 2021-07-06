@@ -1,16 +1,12 @@
 """Check Python ASTs against templates"""
 import ast
-import sys
-PY3 = sys.version_info[0] >= 3
 
 __version__ = '0.2.5'
 
-if PY3:
-    def mkarg(name):
-        return ast.arg(arg=name)
-else:
-    def mkarg(name):
-        return ast.Name(id=name, ctx=ast.Param())
+def mkarg(name):
+    # This was defined for Python 2-3 compatibility, and now left in place to
+    # avoid breaking code that uses it.
+    return ast.arg(arg=name)
 
 def must_exist(node, path):
     """Checker function for an item or list that must exist
