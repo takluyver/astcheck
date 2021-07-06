@@ -34,7 +34,7 @@ def must_not_exist(node, path):
     raise ASTMismatch(path, node, "nothing")
 
 class name_or_attr(object):
-    """Make a checker function for :class:`ast.Name` or :class:`ast.Attribute`.
+    """Checker for :class:`ast.Name` or :class:`ast.Attribute`
     
     These are often used in similar ways - depending on how you do imports,
     objects will be referenced as names or as attributes of a module. By using
@@ -62,8 +62,19 @@ class name_or_attr(object):
 class single_assign:
     """Checker for :class:`ast.Assign` or :class:`ast.AnnAssign`
 
-    Matches only assignments with a single target. Will also check against
-    the target & value, if specified.
+    :class:`~ast.Assign` is a plain assignment. This will match only assignments
+    to a single target (``a = 1`` but not ``a = b = 1``).
+    :class:`~ast.AnnAssign` is an annotated assignment, like ``a: int = 7``.
+    *target* and *value* may be AST nodes to check, so this would match any
+    assignment to ``a``::
+
+        astcheck.single_assign(target=ast.Name(id='a'))
+
+    Annotated assignments don't necessarily have a value: ``a: int`` is parsed
+    as an :class:`~ast.AnnAssign` node. Use :func:`must_exist` to avoid matching
+    these::
+
+        astcheck.single_assign(target=ast.Name(id='a'), value=astcheck.must_exist)
     """
     def __init__(self, target=None, value=None):
         self.target = target
