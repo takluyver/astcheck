@@ -16,7 +16,7 @@ classifiers = [
     "Topic :: Software Development :: Code Generators",
     "Topic :: Software Development :: Testing",
 ]
-requires-python = ">=3.5"
+requires-python = ">=3.8"
 dynamic = ['version', 'description']
 
 [project.urls]
