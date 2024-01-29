@@ -21,3 +21,4 @@ dynamic = ['version', 'description']
 
 [project.urls]
 Source = "https://github.com/takluyver/astcheck"
+Documentation = "https://astcheck.readthedocs.io/en/latest/"
