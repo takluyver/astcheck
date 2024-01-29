@@ -229,7 +229,10 @@ def assert_ast_like(sample, template, _path=None):
             # Checker function
             template_field(sample_field, field_path)
 
-        else:
+        # From Python 3.9, fields can't be entirely absent, as they could
+        # in earlier versions, so None means unspecified. To specify a field
+        # should be None, use must_not_exist.
+        elif template_field is not None:
             # Single value, e.g. Name.id
             if sample_field != template_field:
                 raise ASTPlainObjMismatch(field_path, sample_field, template_field)

@@ -342,3 +342,8 @@ class TestCheckerFunction(unittest.TestCase):
             assert_ast_like(for_else_sample.body[0], for_noelse_template)
 
         assert raised.exception.path == ['tree', 'orelse']
+
+
+def test_missing_field():
+    mod = ast.parse("import foo as bar")
+    assert_ast_like(mod.body[0], ast.Import(names=[ast.alias(name='foo')]))
