@@ -181,7 +181,7 @@ sample4 = ast.parse(sample4_code, mode='eval')
 
 template4 = ast.Expression(body=ast.BinOp(
     left=ast.BinOp(left=name_or_attr('b'), op=ast.Mult(), right=name_or_attr('c')),
-    op = ast.Add(), right=ast.Num(n=4)
+    op = ast.Add(), right=ast.Constant(value=4)
     )
 )
 
@@ -233,7 +233,7 @@ def test_single_assign():
 
 def test_single_assign_target_value():
     assert_ast_like(assign_sample.body[0], astcheck.single_assign(
-        target=ast.Name(id='a'), value=ast.Num(1),
+        target=ast.Name(id='a'), value=ast.Constant(1),
     ))
     with pytest.raises(astcheck.ASTPlainObjMismatch):
         assert_ast_like(assign_sample.body[0], astcheck.single_assign(
@@ -241,11 +241,11 @@ def test_single_assign_target_value():
         ))
     with pytest.raises(astcheck.ASTPlainObjMismatch):
         assert_ast_like(assign_sample.body[0], astcheck.single_assign(
-            value=ast.Num(99)
+            value=ast.Constant(99)
         ))
 
     assert_ast_like(assign_sample.body[2], astcheck.single_assign(
-        target=astcheck.name_or_attr('f'), value=ast.Num(4),
+        target=astcheck.name_or_attr('f'), value=ast.Constant(4),
     ))
     with pytest.raises(astcheck.ASTPlainObjMismatch):
         assert_ast_like(assign_sample.body[2], astcheck.single_assign(
@@ -263,7 +263,7 @@ def test_single_assign_annotated():
 
     assert_ast_like(b, astcheck.single_assign())
     assert_ast_like(b, astcheck.single_assign(
-        target=ast.Name(id='b'), value=ast.Num(2),
+        target=ast.Name(id='b'), value=ast.Constant(2),
     ))
     with pytest.raises(astcheck.ASTPlainObjMismatch):
         assert_ast_like(b, astcheck.single_assign(
@@ -271,12 +271,12 @@ def test_single_assign_annotated():
         ))
     with pytest.raises(astcheck.ASTPlainObjMismatch):
         assert_ast_like(b, astcheck.single_assign(
-            value=ast.Num(99)
+            value=ast.Constant(99)
         ))
 
     assert_ast_like(g_h, astcheck.single_assign())
     assert_ast_like(g_h, astcheck.single_assign(
-        target=astcheck.name_or_attr('h'), value=ast.Num(5),
+        target=astcheck.name_or_attr('h'), value=ast.Constant(5),
     ))
     with pytest.raises(astcheck.ASTPlainObjMismatch):
         assert_ast_like(g_h, astcheck.single_assign(
@@ -288,12 +288,15 @@ number_sample_code = "9 - 4"
 number_sample = ast.parse(number_sample_code, mode='eval')
 
 def less_than_seven(node, path):
-    if not isinstance(node, ast.Num):
-        raise astcheck.ASTNodeTypeMismatch(path, node, ast.Num())
-    if node.n >= 7:
-        raise astcheck.ASTMismatch(path+['n'], node.n, '< 7')
+    if not isinstance(node, ast.Constant):
+        raise astcheck.ASTNodeTypeMismatch(path, node, ast.Constant())
+    n = node.value
+    if not isinstance(n, (int, float)):
+        raise astcheck.ASTNodeTypeMismatch(path, node, 'number')
+    if n >= 7:
+        raise astcheck.ASTMismatch(path+['n'], node.value, '< 7')
 
-number_template_ok = ast.Expression(body=ast.BinOp(left=ast.Num(n=9),
+number_template_ok = ast.Expression(body=ast.BinOp(left=ast.Constant(value=9),
                                 op=ast.Sub(), right=less_than_seven
 ))
 
