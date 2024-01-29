@@ -1,7 +1,7 @@
 """Check Python ASTs against templates"""
 import ast
 
-__version__ = '0.3.0'
+__version__ = '0.4.0'
 
 def mkarg(name):
     # This was defined for Python 2-3 compatibility, and now left in place to
